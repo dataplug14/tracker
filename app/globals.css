@@ -1,0 +1,384 @@
+@import "tailwindcss";
+
+/* VTC Job Tracker - Gaming Aesthetic Design System */
+
+:root {
+  /* Base Colors - Deep Dark Gaming Theme */
+  --background: #0a0a12;
+  --background-secondary: #12121a;
+  --background-tertiary: #1a1a24;
+  --foreground: #ffffff;
+  --foreground-muted: #a0a0b0;
+  --foreground-dim: #6a6a7a;
+
+  /* Border Colors */
+  --border: #2a2a3a;
+  --border-highlight: #3a3a4a;
+
+  /* ETS2 Accent (Amber/Orange) */
+  --ets2-primary: #f59e0b;
+  --ets2-secondary: #d97706;
+  --ets2-glow: rgba(245, 158, 11, 0.4);
+
+  /* ATS Accent (Electric Blue) */
+  --ats-primary: #3b82f6;
+  --ats-secondary: #2563eb;
+  --ats-glow: rgba(59, 130, 246, 0.4);
+
+  /* Status Colors */
+  --success: #22c55e;
+  --success-glow: rgba(34, 197, 94, 0.3);
+  --warning: #eab308;
+  --warning-glow: rgba(234, 179, 8, 0.3);
+  --error: #ef4444;
+  --error-glow: rgba(239, 68, 68, 0.3);
+  --info: #06b6d4;
+  --info-glow: rgba(6, 182, 212, 0.3);
+
+  /* Status Badges */
+  --pending-bg: rgba(234, 179, 8, 0.15);
+  --pending-text: #fbbf24;
+  --approved-bg: rgba(34, 197, 94, 0.15);
+  --approved-text: #4ade80;
+  --rejected-bg: rgba(239, 68, 68, 0.15);
+  --rejected-text: #f87171;
+
+  /* Rank Badge Colors */
+  --rank-bronze: linear-gradient(135deg, #cd7f32, #8b4513);
+  --rank-silver: linear-gradient(135deg, #c0c0c0, #808080);
+  --rank-gold: linear-gradient(135deg, #ffd700, #daa520);
+  --rank-diamond: linear-gradient(135deg, #b9f2ff, #00d4ff);
+
+  /* Achievement Rarity */
+  --rarity-common: #9ca3af;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-dim: var(--foreground-dim);
+  --color-border: var(--border);
+  --color-border-highlight: var(--border-highlight);
+  --color-ets2: var(--ets2-primary);
+  --color-ats: var(--ats-primary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base Styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-dim);
+}
+
+/* Glow Effects */
+.glow-ets2 {
+  box-shadow:
+    0 0 20px var(--ets2-glow),
+    0 0 40px var(--ets2-glow);
+}
+
+.glow-ats {
+  box-shadow:
+    0 0 20px var(--ats-glow),
+    0 0 40px var(--ats-glow);
+}
+
+.glow-success {
+  box-shadow: 0 0 15px var(--success-glow);
+}
+
+.glow-error {
+  box-shadow: 0 0 15px var(--error-glow);
+}
+
+/* Card Styles */
+.card {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--border-highlight);
+}
+
+.card-glow-ets2:hover {
+  box-shadow: 0 0 30px var(--ets2-glow);
+  border-color: var(--ets2-primary);
+}
+
+.card-glow-ats:hover {
+  box-shadow: 0 0 30px var(--ats-glow);
+  border-color: var(--ats-primary);
+}
+
+/* Gaming Button Styles */
+.btn-primary-ets2 {
+  background: linear-gradient(
+    135deg,
+    var(--ets2-primary),
+    var(--ets2-secondary)
+  );
+  color: #000;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-ets2:hover {
+  box-shadow: 0 0 20px var(--ets2-glow);
+  transform: translateY(-2px);
+}
+
+.btn-primary-ats {
+  background: linear-gradient(135deg, var(--ats-primary), var(--ats-secondary));
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-ats:hover {
+  box-shadow: 0 0 20px var(--ats-glow);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground-muted);
+  transition: all 0.3s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--foreground-dim);
+  color: var(--foreground);
+  background: var(--background-tertiary);
+}
+
+/* Stat Gauge Animation */
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: 283;
+  }
+}
+
+@keyframes counter-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-gauge {
+  animation: gauge-fill 1.5s ease-out forwards;
+}
+
+.animate-counter {
+  animation: counter-up 0.5s ease-out forwards;
+}
+
+/* Badge Styles */
+.badge-pending {
+  background: var(--pending-bg);
+  color: var(--pending-text);
+  border: 1px solid var(--pending-text);
+}
+
+.badge-approved {
+  background: var(--approved-bg);
+  color: var(--approved-text);
+  border: 1px solid var(--approved-text);
+}
+
+.badge-rejected {
+  background: var(--rejected-bg);
+  color: var(--rejected-text);
+  border: 1px solid var(--rejected-text);
+}
+
+/* Rank Badges */
+.rank-badge {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.rank-bronze {
+  background: var(--rank-bronze);
+  color: #fff;
+}
+
+.rank-silver {
+  background: var(--rank-silver);
+  color: #000;
+}
+
+.rank-gold {
+  background: var(--rank-gold);
+  color: #000;
+}
+
+.rank-diamond {
+  background: var(--rank-diamond);
+  color: #000;
+}
+
+/* Achievement Rarity Borders */
+.rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.rarity-rare {
+  border-color: var(--rarity-rare);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+}
+
+.rarity-legendary {
+  border-color: var(--rarity-legendary);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  animation: legendary-pulse 2s ease-in-out infinite;
+}
+
+@keyframes legendary-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
+  }
+}
+
+/* Data Table Styles */
+.table-header {
+  background: var(--background-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s ease;
+}
+
+.table-row:hover {
+  background: var(--background-tertiary);
+}
+
+/* Form Input Styles */
+.input-gaming {
+  background: var(--background-tertiary);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  transition: all 0.3s ease;
+}
+
+.input-gaming:focus {
+  outline: none;
+  border-color: var(--ets2-primary);
+  box-shadow: 0 0 10px var(--ets2-glow);
+}
+
+.input-gaming-ats:focus {
+  border-color: var(--ats-primary);
+  box-shadow: 0 0 10px var(--ats-glow);
+}
+
+/* Sidebar Navigation */
+.nav-item {
+  color: var(--foreground-muted);
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  color: var(--foreground);
+  background: var(--background-tertiary);
+}
+
+.nav-item.active {
+  color: var(--ets2-primary);
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--ets2-primary);
+}
+
+/* Pulse animation for alerts */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.pulse-alert {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Metallic gradient for featured items */
+.metallic-gold {
+  background: linear-gradient(
+    135deg,
+    #bf953f,
+    #fcf6ba,
+    #b38728,
+    #fbf5b7,
+    #aa771c
+  );
+  background-size: 200% 200%;
+  animation: metallic-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes metallic-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
