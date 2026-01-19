@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Target,
   Monitor,
+  Github,
 } from 'lucide-react';
 
 interface NavItem {
@@ -171,6 +172,15 @@ export function Sidebar({ user }: SidebarProps) {
           </div>
         </div>
         <div className="flex gap-2">
+          <Link
+            href="https://github.com/dataplug14/tracker/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-foreground-muted hover:text-foreground bg-background-tertiary rounded-lg transition-colors"
+            title="View Source on GitHub"
+          >
+            <Github className="w-4 h-4" />
+          </Link>
           <Link
             href="/settings/device"
             className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-foreground-muted hover:text-foreground bg-background-tertiary rounded-lg transition-colors"
