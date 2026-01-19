@@ -201,7 +201,8 @@ export const mockClient = {
           mockStore.update('profiles', userId, { is_active: isActive } as any);
           return true;
       // ... admin actions
-  },
+      } // Close toggleActive
+  }, // Close admin
 
   invites: {
       validate: async (code: string) => {

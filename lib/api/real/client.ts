@@ -308,7 +308,8 @@ export const realClient = {
           if (error) throw new ApiError(error.message, ErrorCodes.INTERNAL_ERROR);
           return true;
       // ... admin actions
-  },
+      } // Close toggleActive
+  }, // Close admin
 
   invites: {
       validate: async (code: string) => {
