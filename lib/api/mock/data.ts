@@ -51,6 +51,7 @@ const SEED_DATA: MockData = {
       truck_id: 'truck-1',
       trailer_id: null,
       completed_at: new Date(Date.now() - 86400000).toISOString(),
+      created_at: new Date(Date.now() - 90000000).toISOString(),
     },
     {
       id: 'job-2',
@@ -66,6 +67,7 @@ const SEED_DATA: MockData = {
       truck_id: 'truck-2',
       trailer_id: null,
       completed_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     },
   ],
   trucks: [

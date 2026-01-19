@@ -91,54 +91,13 @@ function RegisterContent() {
 
     try {
       // Sign up the user (this updates auth store)
-      await registerUser(data.email, data.password, {
-          display_name: data.displayName,
-          truckers_mp_id: data.truckersMpId || null,
-          steam_id: data.steamId || null,
-      });
-
-      // We need the user ID. registerUser returns void but updates store.
-      // However, the api.auth.register called by hooks returns the user/session.
-      // But useAuth().register wraps it.
-      // We can also fetch current user from 'api.auth.me()' or assume success means we can proceed?
-      // Wait, 'useAuth().register' might not handle the complex flow.
-      // It calls 'api.auth.register'.
-      // If we need the ID to claim invite, we need it.
-      
-      // Alternative: Use api.auth.register directly to get the user object, AND api.auth.me() to update store?
-      // Or just api.auth.register.
-      
-      // Let's rely on api call here instead of hook for the complex flow, 
-      // but then we need to manually update store or reload?
-      // The hook 'register' calls 'api.auth.register' then 'set({ user })'.
-      // If we use 'api.auth.register' directly, the store won't update immediately.
-      // But we are redirecting to dashboard anyway.
-      
-      // BUT we need the user object to claim the invite.
-      // The hook does NOT return the user object (it returns Promise<void>).
-      // That's a limitation of the current hook implementation.
-      // I'll call api.auth.register directly.
-      
-      const session = await api.auth.register(data.email, data.password, {
-           display_name: data.displayName,
-           truckers_mp_id: data.truckersMpId || null,
-           steam_id: data.steamId || null,
-      });
-      
-      if (!session?.user) throw new Error('Registration failed');
-
-      // Update the invite usage
-      await api.invites.claim(inviteCode, session.user.id);
-
-      // Profile update is handled by metadata in register? 
-      // 'api.auth.register' passes metadata. 
-      // In real client, Supabase handles metadata -> profile trigger usually.
-      // If manual profile update was needed (as in original code), we should do it.
-      // Original code did manual update. I'll do it too to be safe.
-      await api.profiles.update(session.user.id, {
-          display_name: data.displayName,
-          truckers_mp_id: data.truckersMpId || null,
-          steam_id: data.steamId || null,
+      await registerUser({
+        email: data.email,
+        password: data.password,
+        displayName: data.displayName,
+        inviteCode: inviteCode!, // We checked inviteCode exists at the start of onSubmit
+        truckersMpId: data.truckersMpId,
+        steamId: data.steamId,
       });
 
       router.push('/dashboard');

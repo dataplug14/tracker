@@ -38,7 +38,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(data.email, data.password);
+      await login({ email: data.email, password: data.password });
       router.push('/dashboard');
       router.refresh();
     } catch (err) {
