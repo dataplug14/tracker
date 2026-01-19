@@ -9,7 +9,7 @@ import { User, ExternalLink, Eye, EyeOff, Save, Check } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { createClient } from '@/lib/supabase/client';
+import { api } from '@/lib/api';
 import type { Profile } from '@/lib/types/database';
 
 const profileSchema = z.object({
@@ -62,11 +62,7 @@ export function ProfileSettingsForm({ profile, userId }: ProfileSettingsFormProp
     setSaved(false);
 
     try {
-      const supabase = createClient();
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      await api.profiles.update(userId, {
           display_name: data.displayName,
           bio: data.bio || null,
           truckers_mp_id: data.truckersMpId || null,
@@ -74,10 +70,7 @@ export function ProfileSettingsForm({ profile, userId }: ProfileSettingsFormProp
           privacy_show_jobs: data.privacyShowJobs,
           privacy_show_fleet: data.privacyShowFleet,
           privacy_show_stats: data.privacyShowStats,
-        })
-        .eq('id', userId);
-
-      if (error) throw error;
+      });
 
       setSaved(true);
       router.refresh();

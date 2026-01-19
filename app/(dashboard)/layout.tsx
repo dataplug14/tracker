@@ -1,42 +1,46 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { Sidebar } from '@/components/layout/Sidebar';
+'use client';
 
-export default async function DashboardLayout({
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/hooks';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { Truck } from 'lucide-react';
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (!user) {
-    redirect('/login');
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+          <Truck className="w-12 h-12 text-ets2" />
+          <p className="text-foreground-muted">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Get user profile and role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, avatar_url')
-    .eq('id', user.id)
-    .single();
-
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .single();
-
-  const userData = {
-    display_name: profile?.display_name || 'Driver',
-    avatar_url: profile?.avatar_url,
-    role: (roleData?.role || 'driver') as 'owner' | 'manager' | 'driver',
+  // Ensure role is strictly typed for Sidebar
+  const sidebarUser = {
+    display_name: user.display_name,
+    avatar_url: user.avatar_url,
+    role: user.role as 'owner' | 'manager' | 'driver',
   };
 
   return (
     <div className="min-h-screen flex bg-background">
-      <Sidebar user={userData} />
+      <Sidebar user={sidebarUser} />
       <main className="flex-1 min-w-0 lg:ml-0">
         {children}
       </main>

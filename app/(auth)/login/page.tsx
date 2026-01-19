@@ -10,7 +10,7 @@ import { Truck, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth/hooks';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -21,6 +21,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,21 +38,11 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (signInError) {
-        setError(signInError.message);
-        return;
-      }
-
+      await login(data.email, data.password);
       router.push('/dashboard');
       router.refresh();
-    } catch {
-      setError('An unexpected error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }

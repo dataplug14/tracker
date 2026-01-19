@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Monitor, Copy, Check, RefreshCw, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { api } from '@/lib/api';
 
 interface DeviceCode {
   code: string;
@@ -24,19 +25,10 @@ export function DeviceLinkContent() {
     setCopied(false);
 
     try {
-      const response = await fetch('/api/auth/device', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to generate code');
-      }
-
-      const data = await response.json();
-      setDeviceCode(data);
-      setCountdown(data.expires_in_seconds);
+      const data = await api.devices.createPairingCode();
+      // Ensure specific type is handled if API returns 'any'
+      setDeviceCode(data as DeviceCode);
+      setCountdown((data as any).expires_in_seconds || 600);
 
       // Start countdown
       const interval = setInterval(() => {

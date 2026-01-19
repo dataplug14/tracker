@@ -1,26 +1,48 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { useUser } from '@/lib/auth/hooks';
 import { Header } from '@/components/layout/Header';
 import { JobsContent } from './JobsContent';
+import { Job } from '@/lib/api/types';
+import { Package } from 'lucide-react';
 
-export default async function JobsPage() {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return null;
+export default function JobsPage() {
+  const user = useUser();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchJobs() {
+      if (!user) return;
+      try {
+        setIsLoading(true);
+        // @ts-ignore - Type assertion for API return
+        const data = await api.jobs.list(user.id);
+        setJobs(data as unknown as Job[]);
+      } catch (error) {
+        console.error('Failed to fetch jobs', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchJobs();
+    }
+  }, [user]);
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <Header title="My Jobs" subtitle="Track your deliveries and earnings" />
+        <div className="flex justify-center py-12">
+            <Package className="w-8 h-8 text-foreground-muted animate-pulse" />
+        </div>
+      </div>
+    );
   }
-
-  // Get all user jobs with truck and trailer info
-  const { data: jobs } = await supabase
-    .from('jobs')
-    .select(`
-      *,
-      truck:trucks(id, brand, model, custom_name),
-      trailer:trailers(id, trailer_type, custom_name)
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
 
   return (
     <>
@@ -28,7 +50,7 @@ export default async function JobsPage() {
         title="My Jobs" 
         subtitle="Track your deliveries and earnings"
       />
-      <JobsContent jobs={jobs || []} />
+      <JobsContent jobs={jobs as any[]} />
     </>
   );
 }

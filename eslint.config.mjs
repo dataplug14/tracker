@@ -13,6 +13,19 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "no-restricted-syntax": [
+        "warn",
+        {
+          "selector": "CallExpression[callee.name='fetch']",
+          "message": "Do not use 'fetch' directly. Use the 'api' client from '@/lib/api' instead."
+        }
+      ]
+    }
+  }
 ]);
 
 export default eslintConfig;

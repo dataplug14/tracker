@@ -1,38 +1,49 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { useUser } from '@/lib/auth/hooks';
 import { Header } from '@/components/layout/Header';
 import { ConvoysContent } from './ConvoysContent';
+import { Calendar } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export default function ConvoysPage() {
+  const user = useUser();
+  const [data, setData] = useState<{ convoys: any[]; userTrucks: any[] }>({ convoys: [], userTrucks: [] });
+  const [isLoading, setIsLoading] = useState(true);
 
-export default async function ConvoysPage() {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return null;
+  useEffect(() => {
+    async function fetchData() {
+      if (!user) return;
+      try {
+        setIsLoading(true);
+        const [convoys, userTrucks] = await Promise.all([
+          api.convoys.list(),
+          api.trucks.list(user.id),
+        ]);
+        setData({ convoys, userTrucks });
+      } catch (error) {
+        console.error('Failed to fetch convoys data', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="p-6">
+        <Header title="Convoys" subtitle="Join scheduled group events" />
+        <div className="flex justify-center py-12">
+            <Calendar className="w-8 h-8 text-foreground-muted animate-pulse" />
+        </div>
+      </div>
+    );
   }
-
-  // Get all convoys
-  const { data: convoys } = await supabase
-    .from('convoys')
-    .select(`
-      *,
-      organizer:profiles!organizer_id(id, display_name, avatar_url),
-      signups:convoy_signups(
-        id, 
-        user_id,
-        profile:profiles(id, display_name, avatar_url),
-        truck:trucks(id, brand, model, custom_name)
-      )
-    `)
-    .order('scheduled_at', { ascending: true });
-
-  // Get user's trucks for signup
-  const { data: userTrucks } = await supabase
-    .from('trucks')
-    .select('id, brand, model, custom_name, game')
-    .eq('user_id', user.id);
 
   return (
     <>
@@ -41,8 +52,8 @@ export default async function ConvoysPage() {
         subtitle="Join scheduled group events"
       />
       <ConvoysContent 
-        convoys={convoys || []}
-        userTrucks={userTrucks || []}
+        convoys={data.convoys}
+        userTrucks={data.userTrucks}
         userId={user.id}
       />
     </>

@@ -10,7 +10,8 @@ import { Truck, Mail, Lock, User, ExternalLink, Key, CheckCircle, XCircle } from
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
-import { createClient } from '@/lib/supabase/client';
+import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth/hooks';
 
 const registerSchema = z.object({
   displayName: z.string().min(2, 'Display name must be at least 2 characters'),
@@ -30,6 +31,7 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get('invite');
+  const { register: registerUser } = useAuth();
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,103 +53,97 @@ function RegisterContent() {
         return;
       }
 
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('invites')
-        .select('*')
-        .eq('code', inviteCode)
-        .single();
+      try {
+        const data = await api.invites.validate(inviteCode);
 
-      if (error || !data) {
+        if (!data) {
+          setInviteValid(false);
+          return;
+        }
+
+        // Check if expired
+        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+          setInviteValid(false);
+          return;
+        }
+
+        // Check if max uses reached
+        if (data.max_uses && data.use_count >= data.max_uses) {
+          setInviteValid(false);
+          return;
+        }
+
+        setInviteValid(true);
+      } catch (e) {
+        console.error(e);
         setInviteValid(false);
-        return;
       }
-
-      // Check if expired
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        setInviteValid(false);
-        return;
-      }
-
-      // Check if max uses reached
-      if (data.max_uses && data.use_count >= data.max_uses) {
-        setInviteValid(false);
-        return;
-      }
-
-      setInviteValid(true);
     };
 
     validateInvite();
   }, [inviteCode]);
 
   const onSubmit = async (data: RegisterForm) => {
-    if (!inviteValid) return;
+    if (!inviteValid || !inviteCode) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Sign up the user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            display_name: data.displayName,
-            truckers_mp_id: data.truckersMpId || null,
-            steam_id: data.steamId || null,
-          },
-        },
-      });
-
-      console.log('SignUp response:', { authData, signUpError });
-
-      if (signUpError) {
-        console.error('SignUp error details:', signUpError);
-        // Show more detailed error
-        setError(`${signUpError.message} (Code: ${signUpError.status || 'unknown'})`);
-        return;
-      }
-
-      if (!authData.user) {
-        setError('Registration failed - no user returned');
-        return;
-      }
-
-      console.log('User created:', authData.user.id);
-
-      // Update the invite usage (use simple increment, not RPC)
-      const { error: inviteError } = await supabase
-        .from('invites')
-        .update({ 
-          use_count: 1,
-          used_by: authData.user.id,
-        })
-        .eq('code', inviteCode);
-
-      if (inviteError) {
-        console.error('Invite update error:', inviteError);
-      }
-
-      // Update profile with additional info
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
+      // Sign up the user (this updates auth store)
+      await registerUser(data.email, data.password, {
           display_name: data.displayName,
           truckers_mp_id: data.truckersMpId || null,
           steam_id: data.steamId || null,
-        })
-        .eq('id', authData.user.id);
+      });
 
-      if (profileError) {
-        console.error('Profile update error:', profileError);
-      }
+      // We need the user ID. registerUser returns void but updates store.
+      // However, the api.auth.register called by hooks returns the user/session.
+      // But useAuth().register wraps it.
+      // We can also fetch current user from 'api.auth.me()' or assume success means we can proceed?
+      // Wait, 'useAuth().register' might not handle the complex flow.
+      // It calls 'api.auth.register'.
+      // If we need the ID to claim invite, we need it.
+      
+      // Alternative: Use api.auth.register directly to get the user object, AND api.auth.me() to update store?
+      // Or just api.auth.register.
+      
+      // Let's rely on api call here instead of hook for the complex flow, 
+      // but then we need to manually update store or reload?
+      // The hook 'register' calls 'api.auth.register' then 'set({ user })'.
+      // If we use 'api.auth.register' directly, the store won't update immediately.
+      // But we are redirecting to dashboard anyway.
+      
+      // BUT we need the user object to claim the invite.
+      // The hook does NOT return the user object (it returns Promise<void>).
+      // That's a limitation of the current hook implementation.
+      // I'll call api.auth.register directly.
+      
+      const session = await api.auth.register(data.email, data.password, {
+           display_name: data.displayName,
+           truckers_mp_id: data.truckersMpId || null,
+           steam_id: data.steamId || null,
+      });
+      
+      if (!session?.user) throw new Error('Registration failed');
+
+      // Update the invite usage
+      await api.invites.claim(inviteCode, session.user.id);
+
+      // Profile update is handled by metadata in register? 
+      // 'api.auth.register' passes metadata. 
+      // In real client, Supabase handles metadata -> profile trigger usually.
+      // If manual profile update was needed (as in original code), we should do it.
+      // Original code did manual update. I'll do it too to be safe.
+      await api.profiles.update(session.user.id, {
+          display_name: data.displayName,
+          truckers_mp_id: data.truckersMpId || null,
+          steam_id: data.steamId || null,
+      });
 
       router.push('/dashboard');
       router.refresh();
+      
     } catch (err) {
       console.error('Unexpected error:', err);
       setError(`Unexpected error: ${err instanceof Error ? err.message : 'Unknown'}`);

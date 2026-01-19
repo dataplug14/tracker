@@ -2,6 +2,12 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // In Mock Mode, bypass server-side auth checks.
+  // We rely on client-side AuthProvider and Route Guards.
+  if (process.env.NEXT_PUBLIC_API_MODE === 'mock') {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });

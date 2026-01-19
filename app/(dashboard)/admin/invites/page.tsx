@@ -1,33 +1,54 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { useUser } from '@/lib/auth/hooks';
 import { Header } from '@/components/layout/Header';
 import { InvitesContent } from './InvitesContent';
+import { Ticket } from 'lucide-react';
 
-export default async function AdminInvitesPage() {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return null;
+export default function InvitesPage() {
+  const user = useUser();
+  const [invites, setInvites] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchInvites() {
+      if (!user) return;
+      try {
+        setIsLoading(true);
+        const data = await api.admin.getInvites();
+        setInvites(data || []);
+      } catch (error) {
+        console.error('Failed to fetch invites', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchInvites();
+    }
+  }, [user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="p-6">
+        <Header title="Invites" subtitle="Manage invites" />
+        <div className="flex justify-center py-12">
+            <Ticket className="w-8 h-8 text-foreground-muted animate-pulse" />
+        </div>
+      </div>
+    );
   }
-
-  // Get all invites
-  const { data: invites } = await supabase
-    .from('invites')
-    .select(`
-      *,
-      creator:profiles!created_by(display_name),
-      user:profiles!used_by(display_name)
-    `)
-    .order('created_at', { ascending: false });
 
   return (
     <>
       <Header 
-        title="Invite Management" 
-        subtitle="Create and manage invite codes"
+        title="Invites" 
+        subtitle="Manage invites"
       />
-      <InvitesContent invites={invites || []} userId={user.id} />
+      <InvitesContent invites={invites} userId={user.id} />
     </>
   );
 }

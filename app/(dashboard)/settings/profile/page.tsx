@@ -1,29 +1,37 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { useUser } from '@/lib/auth/hooks';
 import { Header } from '@/components/layout/Header';
 import { ProfileSettingsForm } from './ProfileSettingsForm';
+import { UserCircle } from 'lucide-react';
 
-export default async function ProfileSettingsPage() {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+export default function ProfilePage() {
+  const user = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // We primarily use the user object from auth store, but could re-fetch to be sure
+  // For simplicity, we pass the user object. ProfileForm handles the API call for updates.
   
   if (!user) {
-    return null;
+    return (
+      <div className="p-6">
+        <Header title="Profile Settings" subtitle="Manage your account" />
+        <div className="flex justify-center py-12">
+            <UserCircle className="w-8 h-8 text-foreground-muted animate-pulse" />
+        </div>
+      </div>
+    );
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
 
   return (
     <>
       <Header 
         title="Profile Settings" 
-        subtitle="Manage your profile and privacy"
+        subtitle="Manage your account"
       />
-      <ProfileSettingsForm profile={profile} userId={user.id} />
+      <ProfileSettingsForm profile={user as any} userId={user.id} />
     </>
   );
 }

@@ -29,11 +29,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
-.env.local
-.env.local.example
+!.env.local.example
+# Keep .env.local ignored, but track the example
 
 # vercel
 .vercel
